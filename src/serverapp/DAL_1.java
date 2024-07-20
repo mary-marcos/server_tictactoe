@@ -23,7 +23,7 @@ public class DAL_1 {
        {
            try {
                DriverManager.registerDriver(new ClientDriver());
-               con = DriverManager.getConnection("jdbc:derby://localhost:1527/TicTacToe", "tic", "tic");
+               con = DriverManager.getConnection("jdbc:derby://localhost:1527/UserTable", "tic", "tic");
            } catch (SQLException ex) {
                Logger.getLogger(DAL_1.class.getName()).log(Level.SEVERE, null, ex);
            }
@@ -32,7 +32,7 @@ public class DAL_1 {
     public static void getAllData() throws SQLException {
         
         stablishConnection();
-       String query = "SELECT * FROM USERTABELM";
+       String query = "SELECT * FROM USERTABLE";
        
        PreparedStatement pst = con.prepareStatement(query);
        ResultSet rs = pst.executeQuery();
@@ -41,9 +41,9 @@ public class DAL_1 {
             String userName = rs.getString(1);
             String password = rs.getString(2);
             String email = rs.getString(3);
-            int score = rs.getInt(6);
+            int score = rs.getInt(4);
             boolean status = rs.getBoolean(5);
-            boolean availableity = rs.getBoolean(4);
+            boolean availableity = rs.getBoolean(6);
             UserTable user = new UserTable(userName, password, email, score, status,availableity);
             userList.add(user);
         }
@@ -57,7 +57,7 @@ public class DAL_1 {
     public static void update(UserTable user) throws SQLException {
         
         stablishConnection();
-        String sql = "UPDATE USERTABELM SET PASSWORD=?, EMAIL=?, SCORE=?, STATUS=? WHERE USERNAME=?";
+        String sql = "UPDATE USERTABLE SET PASSWORD=?, EMAIL=?, SCORE=?, STATUS=? WHERE USERNAME=?";
         PreparedStatement pst = con.prepareStatement(sql); 
         
         pst.setString(1, user.getPassword());
@@ -75,24 +75,28 @@ public class DAL_1 {
     }
 
     public static void insert(UserTable user) throws SQLException {
-        //insert to DB
-           stablishConnection();
-        String query = "INSERT INTO USERTABELM (USERNAME, PASSWORD, EMAIL, SCORE, STATUS,ISAVALIABLE ) VALUES (?, ?, ?, ?, ?, ?)";
+        
+        stablishConnection();
+        String query = "INSERT INTO USERTABLE (USERNAME, PASSWORD, EMAIL, SCORE, STATUS,ISAVAILABLE) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement pst = con.prepareStatement(query);
+        
         pst.setString(1, user.getUserName());
         pst.setString(2, user.getPassword());
         pst.setString(3, user.getEmail());
         pst.setInt(4, 0);
         pst.setBoolean(5, false);
         pst.setBoolean(6, true);
+        
         pst.executeUpdate();
+        
         pst.close();
-        con.close(); }
+        con.close();
+    }
 
     public static UserTable search(String username) throws SQLException {
      
         stablishConnection();
-        String query = "SELECT USERNAME, PASSWORD, EMAIL, SCORE, STATUS FROM USERTABELM WHERE USERNAME = ?";
+        String query = "SELECT USERTABLE, PASSWORD, EMAIL, SCORE, STATUS FROM UserTable WHERE USERNAME = ?";
         PreparedStatement pst = con.prepareStatement(query);
         pst.setString(1, username);
 
@@ -112,35 +116,6 @@ public class DAL_1 {
             con.close();
             return user;
     }
-
-//    public static Vector<UserTable> isRepeated() throws SQLException {
-//        
-//        String query = "SELECT * FROM USERTABLE";
-//        PreparedStatement pst = con.prepareStatement(query);
-//        ResultSet rs = pst.executeQuery(query);
-//
-//        Vector<UserTable> userList = new Vector<>();
-//
-//        while (rs.next()) {
-//            String userName = rs.getString(1);
-//            String email = rs.getString(2);
-//            String password = rs.getString(3);
-//            int score = rs.getInt(4);
-//            boolean status = rs.getBoolean(5);
-//
-//            UserTable user = new UserTable(userName, password, email, score, status);
-//
-//            if (userList.stream().anyMatch(existingUser -> existingUser.getUserName().equals(userName))) {
-//                showAlert("Repeated User Name", "Duplicate user found", "Change");
-//            } else {
-//                userList.add(user);
-//            }
-//        }
-//        rs.close();
-//        pst.close();
-//        con.close();
-//        return userList;
-//    }
     
     
     public static boolean isPlayerExist(String userName ,String password) throws SQLException     
@@ -149,7 +124,7 @@ public class DAL_1 {
         
         stablishConnection();
 
-        PreparedStatement pst = con.prepareStatement("SELECT USERNAME, PASSWORD FROM USERTABELM WHERE USERNAME = ? AND PASSWORD = ?");
+        PreparedStatement pst = con.prepareStatement("SELECT USERNAME, PASSWORD FROM USERTABLE WHERE USERNAME = ? AND PASSWORD = ?");
         
         pst.setString(1, userName);
         pst.setString(2, password);
@@ -177,7 +152,7 @@ public class DAL_1 {
          
         stablishConnection();
         
-        String sql = "UPDATE USERTABELM SET  STATUS=? WHERE USERNAME=?";
+        String sql = "UPDATE USERTABLE SET  STATUS=? WHERE USERNAME=?";
         
         PreparedStatement pstm = con.prepareStatement(sql);  
         
@@ -204,13 +179,5 @@ public class DAL_1 {
          return userExist;
      } 
             
-//    private static void showAlert(String body, String header, String buttonName) {
-//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//        alert.setTitle(body);
-//        alert.setHeaderText(header);
-//        ButtonType changeName = new ButtonType(buttonName);
-//        alert.getButtonTypes().setAll(changeName);
-//        alert.showAndWait();
-//    }
         
 }
