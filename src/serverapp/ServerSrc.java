@@ -3,6 +3,7 @@ package serverapp;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.scene.control.Button;
@@ -224,8 +225,17 @@ public class ServerSrc extends AnchorPane implements Runnable {
 
     protected void refresh(javafx.event.ActionEvent actionEvent)
     {
-      int x =   ClintsHandler.clintsVector.size();
-      numOnlinTxt.setText(""+x);
+        try {
+            DAL_1.userList.removeAllElements();
+            DAL_1.getAllData();
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerSrc.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      int online = DAL_1.getOnlinCount();
+      int offline = DAL_1.getOfflinecount();
+      numOnlinTxt.setText(""+online);
+      numOfflinTxt.setText(""+offline);
+      
               
     }
 

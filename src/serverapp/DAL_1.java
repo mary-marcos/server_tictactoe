@@ -16,8 +16,9 @@ import org.apache.derby.jdbc.ClientDriver;
 public class DAL_1 {
     
     private static Connection con;
-    private static Vector<UserTable> userList = new Vector<>();
+    protected static Vector<UserTable> userList = new Vector<>();
     private static boolean userExist;
+    
     
        public static void stablishConnection()
        {
@@ -31,21 +32,25 @@ public class DAL_1 {
        
     public static void getAllData() throws SQLException {
         
-        stablishConnection();
+       stablishConnection();
        String query = "SELECT * FROM USERTABLE";
        
        PreparedStatement pst = con.prepareStatement(query);
        ResultSet rs = pst.executeQuery();
        
         while (rs.next()) {
+            UserTable user = new UserTable();
+            if (user.userName!=rs.getString(1))
+            {
             String userName = rs.getString(1);
             String password = rs.getString(2);
             String email = rs.getString(3);
             int score = rs.getInt(4);
             boolean status = rs.getBoolean(5);
             boolean availableity = rs.getBoolean(6);
-            UserTable user = new UserTable(userName, password, email, score, status,availableity);
+            user = new UserTable(userName, password, email, score, status,availableity);
             userList.add(user);
+            }
         }
         
             rs.close();
@@ -178,6 +183,32 @@ public class DAL_1 {
             }
          return userExist;
      } 
-            
+     public static int getOnlinCount ()
+     {
+        int count = 0;
+        for (UserTable user : userList)
+        {
+            if(user.status)
+            {
+                count++;
+            }
+        }
+        
+        return count;
+     }
+     
+     public static int getOfflinecount()
+     {
+        int count = 0;
+        for (UserTable user : userList)
+        {
+            if(!user.status)
+            {
+                count++;
+            }
+        }
+        
+        return count;
+     }
         
 }
