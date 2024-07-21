@@ -40,7 +40,7 @@ public class ClintsHandler extends Thread {
                  received = dis.readUTF();
                 if (received != null) {
                     System.out.println("Received: " + received);
-                    String[] parts = received.split(",");
+                    String [] parts = received.split(",");
                     switch (parts[0]) {
                         case "move":
                             sendMessageToAll(received);
@@ -71,30 +71,30 @@ public class ClintsHandler extends Thread {
                                 dos.writeUTF("notExist");
                             }
                             break;
-                        case "signin":
+                        case "signIn":
                             if (DAL_1.isPlayerExist(parts[1], parts[2])) {
                                 DAL_1.updateStatus(parts[1], true);
-                                dos.writeUTF("true");
+                                dos.writeUTF("true,yes");
+                                System.out.println("true");
                             } else {
                                 dos.writeUTF("false");
                             }
                             break;
                         
                         case "signOut":
-
                             DAL_1.updateStatus(parts[1], false);
-                            
+                            System.out.println("Client disconnected");
+                            clintsVector.remove(this);
                             break;
                     }
-
+                   
                 }
             } catch (EOFException ef) {
-                System.out.println("Client disconnected.");
-                clintsVector.remove(this);
+                System.out.println("EOFExp");
+                Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ef);
                 break;
             } catch (IOException ex) {
-                System.out.println("Client disconnected.");
-                clintsVector.remove(this);
+                System.out.println("IOExp");
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
                 break;
             } catch (SQLException ex) {

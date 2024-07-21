@@ -231,7 +231,7 @@ public class ServerSrc extends AnchorPane implements Runnable {
         } catch (SQLException ex) {
             Logger.getLogger(ServerSrc.class.getName()).log(Level.SEVERE, null, ex);
         }
-      int online = DAL_1.getOnlinCount();
+      int online = ClintsHandler.clintsVector.size();
       int offline = DAL_1.getOfflinecount();
       numOnlinTxt.setText(""+online);
       numOfflinTxt.setText(""+offline);
