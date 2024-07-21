@@ -101,10 +101,13 @@ public class ClintsHandler extends Thread {
                 }
             } catch (EOFException ef) {
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ef);
+                break;
             } catch (IOException ex) {
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+                break;
             } catch (SQLException ex) {
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+                break;
             }
         }
 
