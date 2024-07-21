@@ -75,23 +75,19 @@ public class DAL_1 {
     }
 
     public static void insert(UserTable user) throws SQLException {
-        
+        //insert to DB
            stablishConnection();
-        String query = "INSERT INTO USERTABELM (USERNAME, PASSWORD, EMAIL, SCORE, STATUS,ISAVALIABLE) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO USERTABELM (USERNAME, PASSWORD, EMAIL, SCORE, STATUS,ISAVALIABLE ) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement pst = con.prepareStatement(query);
-        
         pst.setString(1, user.getUserName());
         pst.setString(2, user.getPassword());
         pst.setString(3, user.getEmail());
         pst.setInt(4, 0);
         pst.setBoolean(5, false);
         pst.setBoolean(6, true);
-        
         pst.executeUpdate();
-        
         pst.close();
-        con.close();
-    }
+        con.close(); }
 
     public static UserTable search(String username) throws SQLException {
      
