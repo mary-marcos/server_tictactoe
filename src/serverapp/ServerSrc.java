@@ -232,7 +232,7 @@ public class ServerSrc extends AnchorPane implements Runnable {
             Logger.getLogger(ServerSrc.class.getName()).log(Level.SEVERE, null, ex);
         }
       int online = ClintsHandler.clintsVector.size();
-      int offline = DAL_1.getOfflinecount();
+      int offline = DAL_1.getOfflinecount()-online;
       numOnlinTxt.setText(""+online);
       numOfflinTxt.setText(""+offline);
       

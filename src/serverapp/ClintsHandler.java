@@ -16,6 +16,7 @@ public class ClintsHandler extends Thread {
     DataOutputStream dos;
     Socket socket;
     String userName;
+    static String received = "";
     static Vector<ClintsHandler> clintsVector = new Vector<>();
 
     ClintsHandler(Socket s) {
@@ -36,8 +37,10 @@ public class ClintsHandler extends Thread {
         while (true) {
 
             try {
-                String received;
+                 if (received!=null)
+                 {
                  received = dis.readUTF();
+                 }
                 if (received != null) {
                     System.out.println("Received: " + received);
                     String [] parts = received.split(",");
@@ -82,21 +85,24 @@ public class ClintsHandler extends Thread {
                             break;
                         
                         case "signOut":
+                            if (parts.length > 1)
+                            {
                             DAL_1.updateStatus(parts[1], false);
+                            }
                             System.out.println("Client disconnected");
                             clintsVector.remove(this);
                             break;
                     }
-                   
+                    
+                   if (parts[0].equals("signOut"))
+                   {
+                       break;
+                   }
                 }
             } catch (EOFException ef) {
-                System.out.println("EOFExp");
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ef);
-                break;
             } catch (IOException ex) {
-                System.out.println("IOExp");
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
-                break;
             } catch (SQLException ex) {
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
