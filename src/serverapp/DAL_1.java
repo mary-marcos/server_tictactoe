@@ -16,7 +16,7 @@ import org.apache.derby.jdbc.ClientDriver;
 public class DAL_1 {
     
     private static Connection con;
-    protected static Vector<UserTable> userList = new Vector<>();
+    protected static Vector<Users> userList = new Vector<>();
     private static boolean userExist;
     
     
@@ -39,18 +39,17 @@ public class DAL_1 {
        ResultSet rs = pst.executeQuery();
        
         while (rs.next()) {
-            UserTable user = new UserTable();
-            if (user.userName!=rs.getString(1))
-            {
+            Users user = new Users();
+            
             String userName = rs.getString(1);
             String password = rs.getString(2);
             String email = rs.getString(3);
             int score = rs.getInt(4);
             boolean status = rs.getBoolean(5);
             boolean availableity = rs.getBoolean(6);
-            user = new UserTable(userName, password, email, score, status,availableity);
+            user = new Users(userName, password, email, score, status,availableity);
             userList.add(user);
-            }
+
         }
         
             rs.close();
@@ -59,7 +58,7 @@ public class DAL_1 {
         
     }
 
-    public static void update(UserTable user) throws SQLException {
+    public static void update(Users user) throws SQLException {
         
         stablishConnection();
         String sql = "UPDATE USERTABLE SET PASSWORD=?, EMAIL=?, SCORE=?, STATUS=? WHERE USERNAME=?";
@@ -79,7 +78,7 @@ public class DAL_1 {
         
     }
 
-    public static void insert(UserTable user) throws SQLException {
+    public static void insert(Users user) throws SQLException {
         
         stablishConnection();
         String query = "INSERT INTO USERTABLE (USERNAME, PASSWORD, EMAIL, SCORE, STATUS,ISAVAILABLE) VALUES (?, ?, ?, ?, ?, ?)";
@@ -98,7 +97,7 @@ public class DAL_1 {
         con.close();
     }
 
-    public static UserTable search(String username) throws SQLException {
+    public static Users search(String username) throws SQLException {
      
         stablishConnection();
         String query = "SELECT USERTABLE, PASSWORD, EMAIL, SCORE, STATUS FROM UserTable WHERE USERNAME = ?";
@@ -106,7 +105,7 @@ public class DAL_1 {
         pst.setString(1, username);
 
         ResultSet rs = pst.executeQuery();
-        UserTable user = null;
+        Users user = null;
         if (rs.next()) {
             String userName = rs.getString(1);
             String password = rs.getString(2);
@@ -114,7 +113,7 @@ public class DAL_1 {
             int score = rs.getInt(4);
             boolean status = rs.getBoolean(5);
             boolean availableity = rs.getBoolean(6);
-            user = new UserTable(userName, password, email, score, status,availableity);
+            user = new Users(userName, password, email, score, status,availableity);
         }
             rs.close();
             pst.close();
@@ -173,7 +172,7 @@ public class DAL_1 {
         try {
 
                 getAllData(); 
-                for (UserTable user:userList)
+                for (Users user:userList)
                 {
                     userExist = user.userName.equals(signUser);
                    if (userExist) {break;}
@@ -186,7 +185,7 @@ public class DAL_1 {
      public static int getOnlinCount ()
      {
         int count = 0;
-        for (UserTable user : userList)
+        for (Users user : userList)
         {
             if(user.status)
             {
@@ -200,7 +199,7 @@ public class DAL_1 {
      public static int getOfflinecount()
      {
         int count = 0;
-        for (UserTable user : userList)
+        for (Users user : userList)
         {
             if(!user.status)
             {

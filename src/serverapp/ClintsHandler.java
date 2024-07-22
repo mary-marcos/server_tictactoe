@@ -52,7 +52,7 @@ public class ClintsHandler extends Thread {
 
                         case "signup":
 
-                            UserTable user = new UserTable();
+                            Users user = new Users();
                             user.setUserName(parts[1]);
                             user.setPassword(parts[2]);
                             user.setEmail(parts[3]);
@@ -77,8 +77,7 @@ public class ClintsHandler extends Thread {
                         case "signIn":
                             if (DAL_1.isPlayerExist(parts[1], parts[2])) {
                                 DAL_1.updateStatus(parts[1], true);
-                                dos.writeUTF("true,yes");
-                                System.out.println("true");
+                                dos.writeUTF("true");
                             } else {
                                 dos.writeUTF("false");
                             }
@@ -91,6 +90,13 @@ public class ClintsHandler extends Thread {
                             }
                             System.out.println("Client disconnected");
                             clintsVector.remove(this);
+                            break;
+                            
+                        case "getUsersData":
+                            
+                            sendVectorSize();
+                            sendUsersData();
+                            
                             break;
                     }
                     
@@ -111,6 +117,38 @@ public class ClintsHandler extends Thread {
             }
         }
 
+    }
+    
+    private void sendVectorSize()
+    {
+        try {
+            DAL_1.userList.removeAllElements();
+            DAL_1.getAllData();
+            System.out.println("launched");
+        } catch (SQLException ex) {
+            Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            dos.writeUTF("vectorSize,"+DAL_1.userList.size());
+            System.out.println("launched2"+DAL_1.userList.size());
+        } catch (IOException ex) {
+            Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void sendUsersData()
+    {
+        for (Users user : DAL_1.userList)
+        {
+            System.out.println(user.userName);
+            String data = "userData,"+user.userName+","
+                    +user.status+","+user.availableity;
+            try {
+                dos.writeUTF(data);
+            } catch (IOException ex) {
+                Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
     

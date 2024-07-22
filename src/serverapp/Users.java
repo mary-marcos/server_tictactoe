@@ -1,7 +1,7 @@
 
 package serverapp;
 
-public class UserTable {
+public class Users {
     String userName;
     String password;
     String email;
@@ -10,12 +10,12 @@ public class UserTable {
     boolean availableity;
     
     
-    public UserTable()
+    public Users()
     {
         
     }
 
-    public UserTable(String userName, String password, String email, int score, boolean status,boolean availableity) {
+    public Users(String userName, String password, String email, int score, boolean status,boolean availableity) {
         this.userName = userName;
         this.password = password;
         this.email = email;
