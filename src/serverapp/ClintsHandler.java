@@ -17,14 +17,16 @@ public class ClintsHandler extends Thread {
     Socket socket;
     String userName;
     static String received = "";
-    static Vector<ClintsHandler> clintsVector = new Vector<>();
+    static Vector<OnlineUsers> clintsVector = new Vector<>();
+    OnlineUsers onlineUser;
+    String reciever;
+    String sender;
 
     ClintsHandler(Socket s) {
         try {
             socket = s;
             dis = new DataInputStream(s.getInputStream());
             dos = new DataOutputStream(s.getOutputStream());
-            clintsVector.add(this);
             start();
         } catch (IOException ex) {
             Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -77,6 +79,8 @@ public class ClintsHandler extends Thread {
                         case "signIn":
                             if (DAL_1.isPlayerExist(parts[1], parts[2])) {
                                 DAL_1.updateStatus(parts[1], true);
+                               onlineUser = new OnlineUsers(this,parts[1]);
+                                clintsVector.add(onlineUser);
                                 dos.writeUTF("true");
                             } else {
                                 dos.writeUTF("false");
@@ -89,7 +93,7 @@ public class ClintsHandler extends Thread {
                             DAL_1.updateStatus(parts[1], false);
                             }
                             System.out.println("Client disconnected");
-                            clintsVector.remove(this);
+                            clintsVector.remove(onlineUser);
                             break;
                             
                         case "getUsersData":
@@ -98,6 +102,13 @@ public class ClintsHandler extends Thread {
                             sendUsersData();
                             
                             break;
+                        case "Invitation":
+                            sender= parts[1];
+                            reciever = parts[2];
+                            System.out.println("reciever = "+reciever+","+sender);
+                            sendInvitation(reciever,sender);
+                            
+                         break;
                     }
                     
                    if (parts[0].equals("signOut"))
@@ -150,13 +161,26 @@ public class ClintsHandler extends Thread {
             }
         }
     }
+    protected void sendInvitation(String receiver,String sender)
+    {
+        for (OnlineUsers onlineU : clintsVector)
+        {
+            if (onlineU.getUserName().equals(receiver))
+            {
+                try {
+                    onlineU.getClint().dos.writeUTF("invitation recieved,"+receiver+","+sender);
+                } catch (IOException ex) {
+                    Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
     
     
     private void sendMessageToAll(String receved) {
-        for (ClintsHandler ch : clintsVector) {
+        for (OnlineUsers oS : clintsVector) {
             try {
-                ch.dos.writeUTF(receved);
-                
+               oS.getClint().dos.writeUTF(receved);
                 System.out.println("sending to client : "+ receved);
             } catch (IOException ex) {
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
