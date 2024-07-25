@@ -109,7 +109,22 @@ public class ClintsHandler extends Thread {
                             sendInvitation(reciever,sender);
                             
                          break;
+                         case "Accepted":
+                             reciever = parts[1];
+                             sender = parts[2];
+                             acceptedInvitation("Challenge accepted");
+                             System.out.println("cha accepted"+clintsVector.size()+reciever+sender);
+                    
+                            break;
+                           
+                           case"refused":
+                               reciever = parts[1];
+                                sender = parts[2];
+                                refusedInvitation("Challenge rejected");
+                                System.out.println("cha rejected"+clintsVector.size());
+                               break;
                     }
+                    
                     
                    if (parts[0].equals("signOut"))
                    {
@@ -169,6 +184,39 @@ public class ClintsHandler extends Thread {
             {
                 try {
                     onlineU.getClint().dos.writeUTF("invitation recieved,"+receiver+","+sender);
+                } catch (IOException ex) {
+                    Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+    protected void acceptedInvitation(String reply)
+    {
+        for (OnlineUsers onlineU : clintsVector)
+        {
+            System.out.println(reciever + sender + "dfdfdf");
+            if (onlineU.getUserName().equals(reciever) || onlineU.getUserName().equals(sender))
+            {
+                try {
+                    onlineU.getClint().dos.writeUTF(reply);
+                    System.out.println(reciever +"==="+ sender );
+                } catch (IOException ex) {
+                    Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+    
+    protected void refusedInvitation(String reply)
+    {
+        for (OnlineUsers onlineU : clintsVector)
+        {
+            System.out.println(reciever + sender + "dfdfdf");
+            if (onlineU.getUserName().equals(sender))
+            {
+                try {
+                    onlineU.getClint().dos.writeUTF(reply);
+                    System.out.println("==="+ sender );
                 } catch (IOException ex) {
                     Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
