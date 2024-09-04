@@ -13,7 +13,7 @@ import org.apache.derby.jdbc.ClientDriver;
 
 
 
-public class DAL_1 {
+public class DAL {
     
     private static Connection con;
     protected static Vector<Users> userList = new Vector<>();
@@ -26,7 +26,7 @@ public class DAL_1 {
                DriverManager.registerDriver(new ClientDriver());
                con = DriverManager.getConnection("jdbc:derby://localhost:1527/UserTable", "tic", "tic");
            } catch (SQLException ex) {
-               Logger.getLogger(DAL_1.class.getName()).log(Level.SEVERE, null, ex);
+               Logger.getLogger(DAL.class.getName()).log(Level.SEVERE, null, ex);
            }
        }
        
@@ -152,16 +152,18 @@ public class DAL_1 {
        return flag; 
     }
     
-     public static void updateStatus(String userName,boolean status) throws SQLException {
+     public static void updateStatus(String userName,boolean status,boolean availability) throws SQLException {
          
         stablishConnection();
         
-        String sql = "UPDATE USERTABLE SET  STATUS=? WHERE USERNAME=?";
+        String sql = "UPDATE USERTABLE SET  STATUS=? , ISAVAILABLE =? WHERE USERNAME=?";
         
         PreparedStatement pstm = con.prepareStatement(sql);  
         
         pstm.setBoolean(1, status);
-        pstm.setString(2,userName);
+        pstm.setBoolean(2, availability);
+        pstm.setString(3,userName);
+        
         pstm.executeUpdate();
         
         pstm.close();
@@ -178,7 +180,7 @@ public class DAL_1 {
                    if (userExist) {break;}
                 }
             }catch (SQLException ex) {
-            Logger.getLogger(DAL_1.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAL.class.getName()).log(Level.SEVERE, null, ex);
             }
          return userExist;
      } 

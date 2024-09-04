@@ -226,13 +226,13 @@ public class ServerSrc extends AnchorPane implements Runnable {
     protected void refresh(javafx.event.ActionEvent actionEvent)
     {
         try {
-            DAL_1.userList.removeAllElements();
-            DAL_1.getAllData();
+            DAL.userList.removeAllElements();
+            DAL.getAllData();
         } catch (SQLException ex) {
             Logger.getLogger(ServerSrc.class.getName()).log(Level.SEVERE, null, ex);
         }
-      int online = ClintsHandler.clintsVector.size();
-      int offline = DAL_1.userList.size()-online;
+      int online = ClintsHandler.clintsMap.size();
+      int offline = DAL.userList.size()-online;
       numOnlinTxt.setText(""+online);
       numOfflinTxt.setText(""+offline);
       

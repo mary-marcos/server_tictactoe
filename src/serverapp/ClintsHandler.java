@@ -6,7 +6,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.Vector;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,8 +17,7 @@ public class ClintsHandler extends Thread {
     Socket socket;
     String userName;
     static String received = "";
-    static Vector<OnlineUsers> clintsVector = new Vector<>();
-    OnlineUsers onlineUser;
+    static HashMap<String,ClintsHandler> clintsMap = new HashMap<>();
     String reciever;
     String sender;
 
@@ -36,94 +35,119 @@ public class ClintsHandler extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        while (!socket.isClosed()) {
 
             try {
-                 if (received!=null)
-                 {
-                 received = dis.readUTF();
-                 }
-                if (received != null) {
-                    System.out.println("Received: " + received);
-                    String [] parts = received.split(",");
-                    switch (parts[0]) {
-                        case "move":
-                            sendMessageToAll(received);
-                            
-                        break;
+                 
+                    received = dis.readUTF();
 
-                        case "signup":
+                    if (received != null) {
+                        System.out.println("Received: " + received);
+                        String [] parts = received.split(",");
+                        switch (parts[0]) {
 
-                            Users user = new Users();
-                            user.setUserName(parts[1]);
-                            user.setPassword(parts[2]);
-                            user.setEmail(parts[3]);
-                            user.setScore(0);
-                            user.setStatus(false);
+                            case "signup":
 
-                            try {
-                                DAL_1.insert(user);
-                            } catch (SQLException ex) {
-                                Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            break;
+                                Users user = new Users();
+                                user.setUserName(parts[1]);
+                                user.setPassword(parts[2]);
+                                user.setEmail(parts[3]);
+                                user.setScore(0);
+                                user.setStatus(false);
 
-                        case "checkUserName":
-                            if (DAL_1.isExist(parts[1])) {
-                                dos.writeUTF("exist");
-                                System.out.println(parts[1]);
-                            } else {
-                                dos.writeUTF("notExist");
-                            }
-                            break;
-                        case "signIn":
-                            if (DAL_1.isPlayerExist(parts[1], parts[2])) {
-                                DAL_1.updateStatus(parts[1], true);
-                               onlineUser = new OnlineUsers(this,parts[1]);
-                                clintsVector.add(onlineUser);
-                                dos.writeUTF("true");
-                            } else {
-                                dos.writeUTF("false");
-                            }
-                            break;
-                        
-                        case "signOut":
-                            if (parts.length > 1)
-                            {
-                            DAL_1.updateStatus(parts[1], false);
-                            }
-                            System.out.println("Client disconnected");
-                            clintsVector.remove(onlineUser);
-                            break;
-                            
-                        case "getUsersData":
-                            
-                            sendVectorSize();
-                            sendUsersData();
-                            
-                            break;
-                        case "Invitation":
-                            sender= parts[1];
-                            reciever = parts[2];
-                            System.out.println("reciever = "+reciever+","+sender);
-                            sendInvitation(reciever,sender);
-                            
-                         break;
-                         case "Accepted":
-                             reciever = parts[1];
-                             sender = parts[2];
-                             acceptedInvitation("Challenge accepted");
-                             System.out.println("cha accepted"+clintsVector.size()+reciever+sender);
-                    
-                            break;
-                           
-                           case"refused":
-                               reciever = parts[1];
-                                sender = parts[2];
-                                refusedInvitation("Challenge rejected");
-                                System.out.println("cha rejected"+clintsVector.size());
-                               break;
-                    }
+                                try {
+                                    DAL.insert(user);
+                                } catch (SQLException ex) {
+                                    Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                break;
+
+                            case "checkUserName":
+                                if (DAL.isExist(parts[1])) {
+                                    dos.writeUTF("exist");
+                                    System.out.println(parts[1]);
+                                } else {
+                                    dos.writeUTF("notExist");
+                                }
+                                break;
+                            case "signIn":
+                                if (DAL.isPlayerExist(parts[1], parts[2])) {
+                                    sender = parts[1];
+                                    DAL.updateStatus(parts[1], true,true);
+                                    clintsMap.put(parts[1], this);
+                                    dos.writeUTF("true,"+sender);
+                                } else {
+                                    dos.writeUTF("false");
+                                }
+                                break;
+
+                            case "signOut":
+                                
+                                DAL.updateStatus(parts[1], false,false);
+                                System.out.println("Client disconnected");
+                                clintsMap.remove(parts[1]);
+                                break;
+
+                            case "getUsersData":
+                                
+                                sendUsersData();
+
+                                break;
+                                
+                            case "Invitation":
+                                sender= parts[1];
+                                reciever = parts[2];
+                                System.out.println("reciever = "+reciever+","+sender);
+                                sendInvitation(reciever,sender);
+
+                             break;
+                             case "Accepted":
+                                 reciever = parts[1];
+                                 sender = parts[2];
+                                 clintsMap.get(sender).dos.writeUTF("Challenge accepted,"+sender+","+reciever);
+                                 clintsMap.get(reciever).dos.writeUTF("Challenge accepted,"+sender+","+reciever);
+                                 clintsMap.get(reciever).dos.writeUTF("disableButtons,");
+
+                                break;
+
+                               case"refused":
+                                   reciever = parts[1];
+                                    sender = parts[2];
+                                    refusedInvitation("Challenge rejected");
+                                    System.out.println("cha rejected"+clintsMap.size());
+                                   break;
+                               case "ExitGame":
+                                   if (sender.equals(parts[1])){
+                                       clintsMap.get(reciever).dos.writeUTF("gemeOver,"+sender);
+                                   }else{
+                                       clintsMap.get(sender).dos.writeUTF("gemeOver,"+reciever);
+                                   }
+                                   
+                                   break;
+                                   
+                               case"updateAvailability":
+
+                                    DAL.updateStatus(parts[1], true,false);
+                                    DAL.updateStatus(parts[2], true,false);
+                                   break;
+                               case"returnAvailability":
+                                   
+                                   DAL.updateStatus(parts[1], true,true);
+                                   DAL.updateStatus(parts[2], true,true);
+                                   break;
+                                   
+                                case"move":
+                                   
+                                    if (parts[3].equals("X")){
+                                       clintsMap.get(reciever).dos.writeUTF("responceMove,"+parts[1]+","+parts[2]+","+parts[3]+",enable");
+                                       clintsMap.get(sender).dos.writeUTF("responceMove,"+parts[1]+","+parts[2]+","+parts[3]+",disabled");
+                                    }else if (parts[3].equals("O")){
+                                       clintsMap.get(sender).dos.writeUTF("responceMove,"+parts[1]+","+parts[2]+","+parts[3]+",enable");
+                                       clintsMap.get(reciever).dos.writeUTF("responceMove,"+parts[1]+","+parts[2]+","+parts[3]+",disabled");
+                                    }
+                                    
+                                     break;
+                }              
                     
                     
                    if (parts[0].equals("signOut"))
@@ -145,30 +169,30 @@ public class ClintsHandler extends Thread {
 
     }
     
-    private void sendVectorSize()
+    private void sendUsersData()
     {
+        DAL.userList.removeAllElements();
         try {
-            DAL_1.userList.removeAllElements();
-            DAL_1.getAllData();
-            System.out.println("launched");
+            DAL.getAllData();
         } catch (SQLException ex) {
             Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        try {
-            dos.writeUTF("vectorSize,"+DAL_1.userList.size());
-            System.out.println("launched2"+DAL_1.userList.size());
-        } catch (IOException ex) {
-            Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    private void sendUsersData()
-    {
-        for (Users user : DAL_1.userList)
+        for (Users user : DAL.userList)
         {
+            String availability ; 
+            String status;
             System.out.println(user.userName);
+            if (user.isAvailableity()){
+                availability = "Available";
+            }
+            else{ availability = "UnAvailable"; }
+            if (user.isStatus()){
+                status = "Online";
+            }else{
+                status= "Offline";
+            }
             String data = "userData,"+user.userName+","
-                    +user.status+","+user.availableity;
+                    +status+","+availability;
             try {
                 dos.writeUTF(data);
             } catch (IOException ex) {
@@ -178,61 +202,34 @@ public class ClintsHandler extends Thread {
     }
     protected void sendInvitation(String receiver,String sender)
     {
-        for (OnlineUsers onlineU : clintsVector)
-        {
-            if (onlineU.getUserName().equals(receiver))
-            {
-                try {
-                    onlineU.getClint().dos.writeUTF("invitation recieved,"+receiver+","+sender);
-                } catch (IOException ex) {
-                    Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+
+        try {
+            clintsMap.get(receiver).dos.writeUTF("invitation recieved,"+receiver+","+sender);
+        } catch (IOException ex) {
+            Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-    protected void acceptedInvitation(String reply)
-    {
-        for (OnlineUsers onlineU : clintsVector)
-        {
-            System.out.println(reciever + sender + "dfdfdf");
-            if (onlineU.getUserName().equals(reciever) || onlineU.getUserName().equals(sender))
-            {
-                try {
-                    onlineU.getClint().dos.writeUTF(reply);
-                    System.out.println(reciever +"==="+ sender );
-                } catch (IOException ex) {
-                    Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
+   
     }
     
     protected void refusedInvitation(String reply)
     {
-        for (OnlineUsers onlineU : clintsVector)
-        {
-            System.out.println(reciever + sender + "dfdfdf");
-            if (onlineU.getUserName().equals(sender))
-            {
-                try {
-                    onlineU.getClint().dos.writeUTF(reply);
-                    System.out.println("==="+ sender );
-                } catch (IOException ex) {
-                    Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+        try {
+            clintsMap.get(sender).dos.writeUTF(reply);
+        } catch (IOException ex) {
+            Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
     
     private void sendMessageToAll(String receved) {
-        for (OnlineUsers oS : clintsVector) {
+        for (ClintsHandler clint: clintsMap.values()) {
             try {
-               oS.getClint().dos.writeUTF(receved);
+               clint.dos.writeUTF(receved);
                 System.out.println("sending to client : "+ receved);
             } catch (IOException ex) {
                 Logger.getLogger(ClintsHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }}
+        }
+    }
 
 }

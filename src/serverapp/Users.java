@@ -10,10 +10,7 @@ public class Users {
     boolean availableity;
     
     
-    public Users()
-    {
-        
-    }
+    public Users(){}
 
     public Users(String userName, String password, String email, int score, boolean status,boolean availableity) {
         this.userName = userName;
@@ -62,6 +59,14 @@ public class Users {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    public boolean isAvailableity() {
+        return availableity;
+    }
+
+    public void setAvailableity(boolean availableity) {
+        this.availableity = availableity;
     }
 
    
